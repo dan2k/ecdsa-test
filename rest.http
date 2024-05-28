@@ -1,0 +1,71 @@
+@hostname=localhost
+@port=3000
+@protocol=http
+@host={{protocol}}://{{hostname}}:{{port}}
+@data=test
+@data_false=test2
+@user=test
+@password=test
+@type=login
+
+###test
+# @name test
+GET {{host}}
+
+###login
+# @name login
+POST {{host}}/login
+Content-Type: application/json
+
+{
+    "username": "{{user}}",
+    "password": "{{password}}"
+}
+
+
+###refresh
+@refresh_token = {{login.response.body.refresh_token}}
+# @name refresh
+POST {{host}}/api/refresh 
+Content-Type: application/json
+Authorization: Bearer {{refresh_token}}
+
+
+
+###sign
+@access_token = {{login.response.body.access_token}}
+#@access_token = {{refresh.response.body.access_token}}
+# @name sign
+POST {{host}}/api/sign
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+
+{
+    "data": "{{data}}"
+}
+
+###verify
+@publicKeyHex= {{sign.response.body.publicKeyHex}}
+@signatureHex= {{sign.response.body.signatureHex}}
+# @name verify
+POST {{host}}/api/verify
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+
+{
+    "publicKeyHex": "{{publicKeyHex}}",
+    "signatureHex": "{{signatureHex}}",
+    "data": "{{data}}"
+}
+
+###verify_false
+# @name verify_false
+POST {{host}}/api/verify
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+
+{
+    "publicKeyHex": "{{publicKeyHex}}",
+    "signatureHex": "{{signatureHex}}",
+    "data": "{{data_false}}"
+}
