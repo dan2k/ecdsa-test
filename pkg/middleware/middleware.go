@@ -28,6 +28,11 @@ func Authenticate(c *fiber.Ctx) error {
 	if !ok {
 		return c.Status(http.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid token"})
 	}
+	// ตรวจสอบว่า token อยู่ใน blacklist หรือไม่
+	if JWT.IsTokenBlacklisted(tokenString) {
+		return c.Status(http.StatusUnauthorized).JSON(fiber.Map{"error": "Token is blacklisted"})
+	}
+
 	username := claims["username"].(string)
 	// บันทึก username ลงใน context
 	c.Locals("username", username)

@@ -11,6 +11,10 @@ import (
 	JWT "mymodule/pkg/jwt"
 	"mymodule/pkg/middleware"
 	"mymodule/pkg/ecdsa"
+	"github.com/go-redis/redis/v8"
+	"context"
+	"fmt"
+
 )
 
 // User struct สำหรับเก็บข้อมูลผู้ใช้
@@ -133,10 +137,42 @@ func refreshToken(c *fiber.Ctx) error {
 	// ส่งกลับ Access Token ใหม่
 	return c.Status(http.StatusOK).JSON(fiber.Map{"access_token": accessToken})
 }
+func LogoutHandler(c *fiber.Ctx) error {
+	tokenString := c.Get("Authorization")
+	if tokenString == "" {
+		return c.Status(http.StatusUnauthorized).JSON(fiber.Map{"error": "Missing token"})
+	}
+
+	tokenString = tokenString[7:] // Remove "Bearer " prefix
+
+	// Blacklist token
+	err := JWT.BlacklistToken(tokenString)
+	if err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to logout"})
+	}
+
+	return c.Status(http.StatusOK).JSON(fiber.Map{"message": "Logout successful"})
+}
 func testHandler(c *fiber.Ctx) error {
 	return c.SendString("Hello, World!")
 }
+
+
+
+
 func Init() {
+	JWT.RedisClient = redis.NewClient(&redis.Options{
+		Addr:     "localhost:6379", // เปลี่ยนเป็น Redis address ของคุณ
+		Password: "",               // เปลี่ยนเป็น Redis password ของคุณ
+		DB:       0,                // เปลี่ยนเป็น Redis database index ของคุณ
+	})
+
+	// ตรวจสอบการเชื่อมต่อ
+	_, err := JWT.RedisClient.Ping(context.Background()).Result()
+	if err != nil {
+		panic(fmt.Sprintf("Failed to connect to Redis: %v", err))
+	}
+	fmt.Println("redis server is connected")
 	// สร้าง Fiber app
 	app := fiber.New()
 
@@ -150,6 +186,7 @@ func Init() {
 	api.Post("/refresh", refreshToken)
 	api.Post("/sign",SignHandler)
 	api.Post("/verify",VerifyHandler)
+	api.Post("/logout",LogoutHandler)
 	// Define routes อื่น ๆ
 	app.Post("/login", login)
 	app.Get("/",testHandler)
