@@ -40,12 +40,12 @@
     workspace={
       onStart={
         redis-server="redis-server --daemonize yes";
-        go-server = ''
+        go-server = "
           until redis-cli ping; do
             sleep 1
           done
           nodemon --signal SIGHUP -w . -e go,html -x go run main.go
-        '';
+        ";
         # api-server="nodemon --signal SIGHUP -w . -e go,html -x go run main.go";
       };
     };
