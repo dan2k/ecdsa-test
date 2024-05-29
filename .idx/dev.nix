@@ -11,9 +11,12 @@
     pkgs.nodePackages.nodemon
     pkgs.redis
     pkgs.gnumake
+    pkgs.systemd
   ];
   # Sets environment variables in the workspace
-  env = {};
+  env = {
+    TZ = "Asia/Bangkok";
+  };
   idx = {
     # Search for the extensions you want on https://open-vsx.org/ and use "publisher.id"
 
@@ -47,6 +50,7 @@
           nodemon --signal SIGHUP -w . -e go,html -x go run main.go
         ";
         # api-server="nodemon --signal SIGHUP -w . -e go,html -x go run main.go";
+        
       };
     };
   };

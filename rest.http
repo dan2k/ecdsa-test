@@ -33,8 +33,8 @@ Authorization: Bearer {{refresh_token}}
 
 
 ###sign
-@access_token = {{login.response.body.access_token}}
-#@access_token = {{refresh.response.body.access_token}}
+#@access_token = {{login.response.body.access_token}}
+@access_token = {{refresh.response.body.access_token}}
 # @name sign
 POST {{host}}/api/sign
 Content-Type: application/json
