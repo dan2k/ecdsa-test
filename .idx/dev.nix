@@ -12,6 +12,7 @@
     pkgs.redis
     pkgs.gnumake
     pkgs.systemd
+    pkgs.iputils
   ];
   # Sets environment variables in the workspace
   env = {
